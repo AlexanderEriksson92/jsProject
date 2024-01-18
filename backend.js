@@ -1,7 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors');
-
+const Food = require('./Food');
 const app = express();
 app.use(express.json());
 
@@ -13,7 +12,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/FoodDB')
   const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     
-var Food = require('./Food');
+   
 
 // Post 
 app.post('/food', async (req, res) => {
@@ -25,7 +24,8 @@ app.post('/food', async (req, res) => {
     newId = highestId[0].id + 1;
   }
   
-  const newFood = new Food({                                        // Skapar nytt objekt med värden från body
+  // Skapar nytt objekt med värden från body
+  const newFood = new Food({                                        
     id: newId,
     name: req.body.name,
     price: req.body.price,
@@ -52,16 +52,17 @@ app.get('/food', (req, res) => {
 app.get('/food/:id', async (req, res) => {
   
   try {
-    const foodId = await Food.findById(req.params.id);
+    const foodId = parseInt(req.params.id);
     if (isNaN(foodId)){
       return res.status(400).json({ message: 'Invalid ID' });
     }
     const food = await Food.findOne({ id: foodId });
     if (!food) {
-        return res.status(404).send('Food item not found.');
+        return res.status(404).send('Food item not foundasd.');
     }
     res.json(food);
   } catch (err) {
+    console.error("Error when fetching food:", err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -86,18 +87,18 @@ app.put('/food/:id', async (req, res) => {                            // Uppdate
   // Raderar ett objekt med ID
   app.delete('/food/:id', async (req, res) => {
     try {
-      const food = await Food.findById(req.params.id);
+      
       const deleteId = parseInt(req.params.id);
       if (isNaN(deleteId)) {
         return res.status(400).json({ message: 'Invalid ID' });
       }
 
-      const deletedFood = await Food.findOneAndDelete({ id: idToDelete });
+      const deletedFood = await Food.findOneAndDelete({ id: deleteId });
       if (!deletedFood) {
           return res.status(404).send('Food item not found.');
       }
 
-      res.send(`Food item with id ${idToDelete} has been deleted.`);
+      res.send(`Food item with id ${deleteId} has been deleted.`);
   } catch (error) {
       res.status(500).send(error.message);
   }
