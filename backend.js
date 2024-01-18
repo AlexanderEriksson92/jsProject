@@ -70,17 +70,30 @@ app.get('/food/:id', async (req, res) => {
 // Uppdaterar ett objekt med ID
 app.put('/food/:id', async (req, res) => {                            // Uppdaterar objekt med ID 
   try {
-    const updateFood = await Food.findById(req.params.id);
-    updateFood.name = req.body.name;
-    updateFood.price = req.body.price;
-    updateFood.description = req.body.description;
-    updateFood.category = req.body.category;
-    updateFood.ExpirationDate = req.body.ExpirationDate;
-    updateFood.dateAdded = req.body.dateAdded;
-    const food = await updateFood.save();
-    res.json(food);
+
+    const updateId = parseInt(req.params.id);
+    if (isNaN(updateId)) {
+      return res.status(400).json({ message: 'Invalid ID' });
+    }
+
+    const updateData = {
+      name: req.body.name,
+      price: req.body.price,
+      weight: req.body.weight,
+      description: req.body.description,
+      category: req.body.category,
+      ExpirationDate: req.body.ExpirationDate,
+      dateAdded: req.body.dateAdded
+    };
+
+     const updateFood = await Food.findOneAndUpdate({ id: updateId }, updateData, { new: true });
+      if (!updateFood) {
+          return res.status(404).send('Food item not found.');
+      }
+
+      res.json(updateFood);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
   });
 
