@@ -3,47 +3,71 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 
 const app = express();
+app.use(express.json());
 
-// Connect to MongoDB
-mongoose
-  .connect('mongodb://localhost:27017/FoodDB', { useNewUrlParser: true })
+// Anslut till databasen och startar servern
+mongoose.connect('mongodb://127.0.0.1:27017/FoodDB')
   .then(() => console.log('MongoDB Connected'))
   .catch(err => console.log(err));
 
-  // Start the server
   const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     
-
-
 var Food = require('./Food');
 
 // Post 
-app.post('/food', (req, res) => {
-  const newFood = new Food({
+app.post('/food', async (req, res) => {
+  try {
+  // Hitta det högsta id:t och öka med 1
+  const highestId = await Food.find().sort('-id').limit(1);
+  let newId = 1;
+  if (highestId.length > 0) {
+    newId = highestId[0].id + 1;
+  }
+  
+  const newFood = new Food({                                        // Skapar nytt objekt med värden från body
+    id: newId,
     name: req.body.name,
     price: req.body.price,
     weight: req.body.weight,
     description: req.body.description,
     category: req.body.category,
-    ExpirationDate: req.body.ExpirqationDate,
+    ExpirationDate: req.body.ExpirationDate,
     dateAdded: req.body.dateAdded
   });
-  newFood.save().then(food => res.json(food));
+  // Spara den nya matvaran
+  await newFood.save();
+  res.json(newFood);
+} catch (err) {
+  res.status(500).json({ message: err.message });
+}
 });
 
-// Get
+// Hämtar alla objekt
 app.get('/food', (req, res) => {
   Food.find().then(food => res.json(food));
 });
 
-// Get by id
-app.get('/food/:id', (req, res) => {
-  Food.findById(req.params.id).then(food => res.json(food));
+// Hämtar ett objekt med ID
+app.get('/food/:id', async (req, res) => {
+  
+  try {
+    const foodId = await Food.findById(req.params.id);
+    if (isNaN(foodId)){
+      return res.status(400).json({ message: 'Invalid ID' });
+    }
+    const food = await Food.findOne({ id: foodId });
+    if (!food) {
+        return res.status(404).send('Food item not found.');
+    }
+    res.json(food);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
-// Update
-app.put('/food/:id', async (req, res) => {
+// Uppdaterar ett objekt med ID
+app.put('/food/:id', async (req, res) => {                            // Uppdaterar objekt med ID 
   try {
     const updateFood = await Food.findById(req.params.id);
     updateFood.name = req.body.name;
@@ -58,3 +82,23 @@ app.put('/food/:id', async (req, res) => {
     res.status(400).json({ message: err.message });
   }
   });
+
+  // Raderar ett objekt med ID
+  app.delete('/food/:id', async (req, res) => {
+    try {
+      const food = await Food.findById(req.params.id);
+      const deleteId = parseInt(req.params.id);
+      if (isNaN(deleteId)) {
+        return res.status(400).json({ message: 'Invalid ID' });
+      }
+
+      const deletedFood = await Food.findOneAndDelete({ id: idToDelete });
+      if (!deletedFood) {
+          return res.status(404).send('Food item not found.');
+      }
+
+      res.send(`Food item with id ${idToDelete} has been deleted.`);
+  } catch (error) {
+      res.status(500).send(error.message);
+  }
+});
