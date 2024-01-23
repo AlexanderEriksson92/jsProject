@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-
+import PutFoodForm from './PutFoodForm';
 
 function App() {
     const [data, setData] = useState(null);
@@ -17,7 +17,8 @@ function App() {
             <header className="App-header">
         
                 {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
-              
+              <PutFoodForm />
+
             </header>
         </div>
     );
