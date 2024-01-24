@@ -24,3 +24,14 @@
     flex-direction: column;
     justify-content: space-around; 
 }
+
+@media (max-width: 768px) {
+     .food-item {
+        grid-template-columns: 1fr;
+        grid-row: 2;
+    }
+    
+    .food-image, .food-info {
+        width: 100%;
+    }
+}

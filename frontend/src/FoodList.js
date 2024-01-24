@@ -26,8 +26,13 @@ function FoodList() {
                             <p><strong>Description:</strong> {foodItem.description}</p>
                             <p><strong>Category:</strong> {foodItem.category}</p>
                             <p><strong>Expiration Date:</strong> {foodItem.ExpirationDate}</p>
-                            <p><strong>Date Added:</strong> {foodItem.dateAdded}</p>
+                            <p><strong>Date Added:</strong> {foodItem.dateAdded}</p> 
+                             <div className="food-buttons">
+                            <button className="btn btn-primary">Edit</button>
+                            <button className="btn btn-danger">Delete</button>
                         </div>
+                        </div>
+                      
                     </li>
                 ))}
             </ul>
