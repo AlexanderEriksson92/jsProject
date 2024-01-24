@@ -1,26 +1,41 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
-import PutFoodForm from './PutFoodForm';
+import './FoodList.css'
+import {
+    BrowserRouter as Router,
+    Switch,
+    Route,
+    Link,
+    Routes
+} from "react-router-dom";
+import FoodForm from './PutFoodForm';
+import FoodList from './FoodList';
+import Home from './Home';
 
 function App() {
-    const [data, setData] = useState(null);
-
-    useEffect(() => {
-        fetch('http://localhost:5000/food')
-            .then(response => response.json())
-            .then(data => setData(data))
-            .catch(error => console.error('Error:', error));
-    }, []);
-
     return (
-        <div className="App">
-            <header className="App-header">
-        
-                {data && <pre>{JSON.stringify(data, null, 2)}</pre>}
-              <PutFoodForm />
-
-            </header>
-        </div>
+        <Router>
+            <div className="App">
+                <nav>
+                    <ul>
+                        <li>
+                            <Link to="/">Startsida</Link>
+                        </li>
+                        <li>
+                            <Link to="/list">Lista</Link>
+                        </li>
+                        <li>
+                            <Link to="/add">Lägg till</Link>
+                        </li>
+                    </ul>
+                </nav>
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/list" element={<FoodList />} />
+                    <Route path="/add" element={<FoodForm />} />
+                </Routes>
+            </div>
+        </Router>
     );
 }
 
