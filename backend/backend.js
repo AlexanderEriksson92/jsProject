@@ -13,8 +13,6 @@ mongoose.connect('mongodb://127.0.0.1:27017/FoodDB')
   const PORT = process.env.PORT || 5000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
     
-   
-
 // Post 
 app.post('/food', async (req, res) => {
   try {

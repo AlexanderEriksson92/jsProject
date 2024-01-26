@@ -25,6 +25,26 @@
     justify-content: space-around; 
 }
 
+.food-edit-box {
+    display: flex;
+    flex-direction: column;
+}
+input[type="text"],
+input[type="number"],
+input[type="date"] {
+    border: none;
+    border-bottom: 1px solid #ccc;
+    padding: 5px;
+    margin-bottom: 10px;
+    width: 100%;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus,
+input[type="date"]:focus {
+    outline: none;
+    border-color: #007bff;
+}
 @media (max-width: 768px) {
      .food-item {
         grid-template-columns: 1fr;
