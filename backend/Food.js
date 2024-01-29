@@ -12,6 +12,7 @@ const foodSchema = new mongoose.Schema({
     description: String,
     category: String,
     ExpirationDate: Date,
+    imageUrl: String,
     dateAdded: Date
 });
 

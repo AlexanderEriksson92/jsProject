@@ -5,18 +5,23 @@ function FoodList() {
     const [food, setFood] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [editedFoodItem, setEditedFoodItem] = useState({});
+    const [deleteMessage, setDeleteMessage] = useState('');
     const handleChange = (e) => {
         setEditedFoodItem({ ...editedFoodItem, [e.target.name]: e.target.value });
     };
 
-    const startEditing = (foodItem) => {
-        setEditingId(foodItem.id);
-        setEditedFoodItem({ ...foodItem });
+    const startEditing = (foodItem) => {                                                    // Om användaren klickar på edit så kommer den här funktionen att köras 
+        setEditingId(foodItem.id);                                                          // Sätter editingId till matvarans id 
+        setEditedFoodItem({ ...foodItem });                                                 // Sätter editedFoodItem till matvaran som ska ändras                       
     };
-    const handleInputChange = async (e) => {
-        setEditedFoodItem({ ...editedFoodItem, [e.target.name]: e.target.value });
+    const handleInputChange = async (e) => {                                                // const som hanterar ändringar i matvaran                  
+        setEditedFoodItem({ ...editedFoodItem, [e.target.name]: e.target.value });          // Sätter editedFoodItem till matvaran som ska ändras
     };
-    const handleEdit = async (id) => {
+    const cancelEditing = () => {
+        setEditingId(null);
+    };
+
+    const handleEdit = async (id) => {                                                      // const som hanterar ändringar i matvaran 
         try {
             const response = await fetch(`http://localhost:5000/food/${id}`, {
                 method: 'PUT',
@@ -40,7 +45,33 @@ function FoodList() {
         }
         setEditingId(null);
     }
+    const handleDelete = async (id) => {
+        const confirmed = window.confirm('Är du säker på att du vill ta bort matvaran?'); // Ger användaren möjligen att bekräfta att den vill radera matvaran
 
+        if (confirmed) {
+            try {
+                const response = await fetch(`http://localhost:5000/food/${id}`, {
+                    method: 'DELETE',
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const foodItemToDelete = food.find((foodItem) => foodItem.id === id);
+                const foodItemName = foodItemToDelete ? foodItemToDelete.name : 'Okänd matvara';
+
+
+                setFood(food.filter((foodItem) => foodItem.id !== id));
+                setDeleteMessage(`${foodItemName} har raderats.`);
+                // Sätter en timeout på 3 sekunder
+                setTimeout(() => {
+                    setDeleteMessage('');
+                }, 3000);
+            } catch (error) {
+                console.log(error);
+            }
+        }
+    };
     useEffect(() => {
         fetch('http://localhost:5000/food')
             .then((response) => response.json())
@@ -50,11 +81,16 @@ function FoodList() {
 
     return (
         <div className="container">
+            {deleteMessage && <div className="alert alert-success">{deleteMessage}</div>}
             <ul className="list-unstyled">
                 {food.map((foodItem) => (
                     <li key={foodItem.id} className='food-item'>
                         <div className="food-image">
-                            <img src={foodItem.imageUrl} />
+                            {foodItem.imageUrl ? (
+                                <img src={foodItem.imageUrl} alt={foodItem.name} />
+                            ) : (
+                                <img src="https://ibb.co/fYZq6yn" alt="Default" />
+                            )}
                         </div>
                         <div className="food-info">
                             {editingId === foodItem.id ? (
@@ -66,8 +102,8 @@ function FoodList() {
                                     <input type="text" name="category" value={editedFoodItem.category} onChange={handleInputChange} />
                                     <input type="text" name="ExpirationDate" value={editedFoodItem.ExpirationDate} onChange={handleInputChange} />
                                     <input type="text" name="dateAdded" value={editedFoodItem.dateAdded} onChange={handleInputChange} />
-                                   
-                                    <button onClick={() => handleEdit(foodItem.id)}>Save</button>
+                                    <button className="btn btn-success" onClick={() => handleEdit(foodItem.id)}>Save</button>
+                                    <button className="btn btn-secondary" onClick={cancelEditing}>Cancel</button>
                                 </div>
                             ) : (
                                 <div>
@@ -79,8 +115,8 @@ function FoodList() {
                                     <p><strong>Expiration Date:</strong> {foodItem.ExpirationDate}</p>
                                     <p><strong>Date Added:</strong> {foodItem.dateAdded}</p>
                                     <div className="food-buttons">
-                                    <button className="btn btn-primary" onClick={() => startEditing(foodItem)}>Edit</button>
-                                        <button className="btn btn-danger">Delete</button>
+                                        <button className="btn btn-primary" onClick={() => startEditing(foodItem)}>Edit</button>
+                                        <button className="btn btn-danger" onClick={() => handleDelete(foodItem.id)}>Delete</button>
                                     </div>
                                 </div>
                             )}

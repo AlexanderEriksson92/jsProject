@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-
 import './FoodForm.css'
-import e from 'cors';
+
 function FoodForm() {
 
   const [foodItem, setFoodItem] = useState({
@@ -14,8 +13,15 @@ function FoodForm() {
     ExpirationDate: '',
     dateAdded: ''
   });
-const [message, setMessage] = useState('');
-const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [image, setImage] = useState('');
+  const [uploading, setUploading] = useState(false);
+
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]);
+  };
+
   const handleChange = (e) => {
     setFoodItem({ ...foodItem, [e.target.name]: e.target.value });
   };
@@ -27,9 +33,39 @@ const [error, setError] = useState('');
       return;
     }
     setError('');
+    setUploading(true);
+    let imageUrl = '';
+
+    if (image) {
+      const formData = new FormData();
+      formData.append('image', image);
+
+      try {
+        const imgResponse = await fetch(`https://api.imgbb.com/1/upload?key=8bcd15382e0ccf4836c2d58cbc158977`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!imgResponse.ok) {
+          throw new Error(`HTTP error! status: ${imgResponse.status}`);
+        }
+
+        const imgData = await imgResponse.json();
+        imageUrl = await imgData.data.url;
+        console.log(imageUrl);
+      }
+      catch (error) {
+        console.error('Error:', error);
+      }
+    }
+    if (imageUrl) {
+      console.log("Bild URL: " + imageUrl);
+    }
+    
     const date = new Date().toISOString();
-    const foodItemAndDate = { ...foodItem, dateAdded: date };
+    const foodItemAndDate = { ...foodItem, imageUrl: imageUrl, dateAdded: date };
     try {
+      console.log(foodItemAndDate);
       const response = await fetch('http://localhost:5000/food', {
         method: 'POST',
         headers: {
@@ -44,6 +80,7 @@ const [error, setError] = useState('');
       }
 
       const data = await response.json();
+      console.log(data);
       setMessage('Matvara tillagd!');
 
       setFoodItem({
@@ -54,9 +91,10 @@ const [error, setError] = useState('');
         description: '',
         category: '',
         ExpirationDate: '',
+        imageUrl: '',
         dateAdded: ''
       });
-     
+
 
     } catch (error) {
       console.error('Error:', error);
@@ -87,9 +125,10 @@ const [error, setError] = useState('');
       </select>
       <label htmlFor="ExpirationDate">Expiration Date</label>
       <input type="date" name="ExpirationDate" value={foodItem.ExpirationDate} onChange={handleChange} />
-     {message && <div className='alert message-alert'>{message}</div>}
-      {error && <div className='alert error-alert'>{error}</div>} 
-     <button type="submit">Lägg till matvara</button>
+      <input type="file" name="image" onChange={handleImageChange} />
+      {message && <div className='alert message-alert'>{message}</div>}
+      {error && <div className='alert error-alert'>{error}</div>}
+      <button type="submit">Lägg till matvara</button>
     </form>
 
   );

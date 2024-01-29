@@ -15,6 +15,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/FoodDB')
     
 // Post 
 app.post('/food', async (req, res) => {
+  console.log("req body: ", req.body);
   try {
   // Hitta det högsta id:t och öka med 1
   const highestId = await Food.find().sort('-id').limit(1);
@@ -32,12 +33,15 @@ app.post('/food', async (req, res) => {
     description: req.body.description,
     category: req.body.category,
     ExpirationDate: req.body.ExpirationDate,
+    imageUrl: req.body.imageUrl,
     dateAdded: req.body.dateAdded
   });
   // Spara den nya matvaran
-  await newFood.save();
-  res.json(newFood);
+  const savedFood = await newFood.save();
+  res.json(savedFood); 
+  console.log("saved food: ", savedFood);
 } catch (err) {
+  console.error("Error saving food: ", err);
   res.status(500).json({ message: err.message });
 }
 });
@@ -69,7 +73,6 @@ app.get('/food/:id', async (req, res) => {
 // Uppdaterar ett objekt med ID
 app.put('/food/:id', async (req, res) => {                            // Uppdaterar objekt med ID 
   try {
-
     const updateId = parseInt(req.params.id);
     if (isNaN(updateId)) {
       return res.status(400).json({ message: 'Invalid ID' });
@@ -82,6 +85,7 @@ app.put('/food/:id', async (req, res) => {                            // Uppdate
       description: req.body.description,
       category: req.body.category,
       ExpirationDate: req.body.ExpirationDate,
+      imageUrl: req.body.imageUrl,
       dateAdded: req.body.dateAdded
     };
 
