@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 function FoodList() {
-
     const [food, setFood] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [editedFoodItem, setEditedFoodItem] = useState({});
@@ -21,12 +20,15 @@ function FoodList() {
         setEditingId(null);
     };
 
-    const handleEdit = async (id) => {                                                      // const som hanterar ändringar i matvaran 
+    const handleEdit = async (id) => {         
+        const apiKey = localStorage.getItem('apiKey');  
+        console.log('API Key in handleEdit:', apiKey);                                          
         try {
             const response = await fetch(`http://localhost:5000/food/${id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
                 },
                 body: JSON.stringify(editedFoodItem),
             });
@@ -46,12 +48,15 @@ function FoodList() {
         setEditingId(null);
     }
     const handleDelete = async (id) => {
+        const apiKey = localStorage.getItem('apiKey');
+        console.log('API Key in handleDelete:', apiKey);
         const confirmed = window.confirm('Är du säker på att du vill ta bort matvaran?'); // Ger användaren möjligen att bekräfta att den vill radera matvaran
-
+        
         if (confirmed) {
             try {
                 const response = await fetch(`http://localhost:5000/food/${id}`, {
                     method: 'DELETE',
+                    'x-api-key': apiKey,
                 });
 
                 if (!response.ok) {
@@ -89,7 +94,7 @@ function FoodList() {
                             {foodItem.imageUrl ? (
                                 <img src={foodItem.imageUrl} alt={foodItem.name} />
                             ) : (
-                                <img src="https://ibb.co/fYZq6yn" alt="Default" />
+                                <img src="https://i.ibb.co/xSwX9Bf/3f338739-34e1-4e43-90a7-6f9ffcfd139b.webp" alt="Default" />
                             )}
                         </div>
                         <div className="food-info">

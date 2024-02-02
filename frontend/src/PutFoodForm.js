@@ -65,11 +65,13 @@ function FoodForm() {
     const date = new Date().toISOString();
     const foodItemAndDate = { ...foodItem, imageUrl: imageUrl, dateAdded: date };
     try {
+      const apiKey = localStorage.getItem('apiKey');
       console.log(foodItemAndDate);
       const response = await fetch('http://localhost:5000/food', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify(foodItemAndDate)
 
