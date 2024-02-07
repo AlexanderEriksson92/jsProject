@@ -5,7 +5,6 @@ import './FoodList.css'
 import {
     BrowserRouter as Router,
     Route,
-    Link,
     Routes
 } from "react-router-dom";
 import FoodForm from './PutFoodForm';
@@ -17,7 +16,6 @@ import Menu from './Menu';
 
 function App() {
     const apiKey = localStorage.getItem('apiKey');
-    console.log(apiKey);
     return (
         <Router>
             <div className="App">

@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
+import './FoodList.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
 
 function FoodList() {
+    const isLoggedIn = localStorage.getItem('apiKey') !== null;
     const [food, setFood] = useState([]);
     const [editingId, setEditingId] = useState(null);
     const [editedFoodItem, setEditedFoodItem] = useState({});
     const [deleteMessage, setDeleteMessage] = useState('');
-    const handleChange = (e) => {
-        setEditedFoodItem({ ...editedFoodItem, [e.target.name]: e.target.value });
-    };
+    const [activeCategory, setActiveCategory] = useState('Alla');
+    const [sortField, setSortField] = useState('name');
+    const [sortOrder, setSortOrder] = useState('asc');
 
     const startEditing = (foodItem) => {                                                    // Om användaren klickar på edit så kommer den här funktionen att köras 
         setEditingId(foodItem.id);                                                          // Sätter editingId till matvarans id 
@@ -19,10 +23,29 @@ function FoodList() {
     const cancelEditing = () => {
         setEditingId(null);
     };
+    const formatDate = (dateString) => {
+        return dateString.slice(0, 15);
+    };
+    const getImageUrl = (imageUrl) => {
+        return imageUrl || 'https://i.ibb.co/xSwX9Bf/3f338739-34e1-4e43-90a7-6f9ffcfd139b.webp';    // Om det inte finns någon bild så visas en default bild
+    };
 
-    const handleEdit = async (id) => {         
-        const apiKey = localStorage.getItem('apiKey');  
-        console.log('API Key in handleEdit:', apiKey);                                          
+    const sortFood = (field) => {
+        const order = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
+        setSortField(field);
+        setSortOrder(order);
+
+        setFood([...food].sort((a, b) => {
+            if (a[field] < b[field]) return order === 'asc' ? -1 : 1;
+            if (a[field] > b[field]) return order === 'asc' ? 1 : -1;
+            return 0;
+        }));
+    };
+
+    const handleSort = (field) => () => sortFood(field);
+    const handleEdit = async (id) => {
+        const apiKey = localStorage.getItem('apiKey');
+        console.log('API Key in handleEdit:', apiKey);
         try {
             const response = await fetch(`http://localhost:5000/food/${id}`, {
                 method: 'PUT',
@@ -51,12 +74,14 @@ function FoodList() {
         const apiKey = localStorage.getItem('apiKey');
         console.log('API Key in handleDelete:', apiKey);
         const confirmed = window.confirm('Är du säker på att du vill ta bort matvaran?'); // Ger användaren möjligen att bekräfta att den vill radera matvaran
-        
+
         if (confirmed) {
             try {
                 const response = await fetch(`http://localhost:5000/food/${id}`, {
                     method: 'DELETE',
-                    'x-api-key': apiKey,
+                    headers: {
+                        'x-api-key': apiKey,
+                    },
                 });
 
                 if (!response.ok) {
@@ -77,60 +102,110 @@ function FoodList() {
             }
         }
     };
+
     useEffect(() => {
         fetch('http://localhost:5000/food')
             .then((response) => response.json())
-            .then((data) => setFood(data))
+            .then((data) => {
+                setFood(data);
+                console.log(data);
+            })
             .catch((error) => console.log(error));
     }, []);
-
     return (
         <div className="container">
             {deleteMessage && <div className="alert alert-success">{deleteMessage}</div>}
-            <ul className="list-unstyled">
-                {food.map((foodItem) => (
-                    <li key={foodItem.id} className='food-item'>
-                        <div className="food-image">
-                            {foodItem.imageUrl ? (
-                                <img src={foodItem.imageUrl} alt={foodItem.name} />
-                            ) : (
-                                <img src="https://i.ibb.co/xSwX9Bf/3f338739-34e1-4e43-90a7-6f9ffcfd139b.webp" alt="Default" />
-                            )}
-                        </div>
-                        <div className="food-info">
-                            {editingId === foodItem.id ? (
-                                <div className="food-edit-box">
-                                    <input type="text" name="name" value={editedFoodItem.name} onChange={handleInputChange} />
-                                    <input type="text" name="price" value={editedFoodItem.price} onChange={handleInputChange} />
-                                    <input type="text" name="weight" value={editedFoodItem.weight} onChange={handleInputChange} />
-                                    <input type="text" name="description" value={editedFoodItem.description} onChange={handleInputChange} />
-                                    <input type="text" name="category" value={editedFoodItem.category} onChange={handleInputChange} />
-                                    <input type="text" name="ExpirationDate" value={editedFoodItem.ExpirationDate} onChange={handleInputChange} />
-                                    <input type="text" name="dateAdded" value={editedFoodItem.dateAdded} onChange={handleInputChange} />
-                                    <button className="btn btn-success" onClick={() => handleEdit(foodItem.id)}>Save</button>
-                                    <button className="btn btn-secondary" onClick={cancelEditing}>Cancel</button>
-                                </div>
-                            ) : (
-                                <div>
-                                    <h2>{foodItem.name}</h2>
-                                    <p><strong>Price:</strong> {foodItem.price}</p>
-                                    <p><strong>Weight:</strong> {foodItem.weight}</p>
-                                    <p><strong>Description:</strong> {foodItem.description}</p>
-                                    <p><strong>Category:</strong> {foodItem.category}</p>
-                                    <p><strong>Expiration Date:</strong> {foodItem.ExpirationDate}</p>
-                                    <p><strong>Date Added:</strong> {foodItem.dateAdded}</p>
-                                    <div className="food-buttons">
-                                        <button className="btn btn-primary" onClick={() => startEditing(foodItem)}>Edit</button>
-                                        <button className="btn btn-danger" onClick={() => handleDelete(foodItem.id)}>Delete</button>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </li>
+
+            <select className="form-select m-3" value={activeCategory} onChange={(e) => setActiveCategory(e.target.value)}>
+                {['Alla', ...new Set(food.map(item => item.category))].map(category => (
+                    <option key={category} value={category}>{category}</option>
                 ))}
-            </ul>
+            </select>
+
+            <table className="table">
+                <thead>
+                    <tr>
+                        <th onClick={handleSort('category')} className="sortable">
+                            Category
+                            <FontAwesomeIcon icon={faChevronDown} />
+                        </th>
+                        <th>Image</th>
+                        <th onClick={handleSort('name')} className="sortable">
+                            Name
+                            <FontAwesomeIcon icon={faChevronDown} />
+                        </th>
+                        <th onClick={handleSort('price')} className="sortable">
+                            Price
+                            <FontAwesomeIcon icon={faChevronDown} />
+                        </th>
+                        <th>Weight</th>
+                        <th onClick={handleSort('description')} className="sortable"
+                        >Description
+                            <FontAwesomeIcon icon={faChevronDown} /></th>
+                        <th onClick={handleSort('expirationDate')} className="sortable">
+                            Expiration Date
+                            <FontAwesomeIcon icon={faChevronDown} /></th>
+                        <th onClick={handleSort('dateAdded')} className="sortable">
+                            Date Added
+                            <FontAwesomeIcon icon={faChevronDown} /></th>
+                        {isLoggedIn && <th>Actions</th>}
+                    </tr>
+                </thead>
+                <tbody>
+                    {food.filter(item => activeCategory === 'Alla' || item.category === activeCategory).map((item) => (
+                        <tr key={item.id} className={editingId === item.id ? 'editing' : 'food-item'}>
+                            <td>{item.category}</td>
+                            <td><img src={getImageUrl(item.imageUrl)} className='food-item-image' alt="food" /></td>
+                            {editingId === item.id ? (
+                                <>
+                                    <td><input type="text" name="name" value={editedFoodItem.name || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="text" name="price" value={editedFoodItem.price || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="text" name="weight" value={editedFoodItem.weight || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="text" name="description" value={editedFoodItem.description || ''} onChange={handleInputChange} /></td>
+                                    <td>
+                                        <select name="category" value={editedFoodItem.category || ''} onChange={handleInputChange}>
+                                            <option value="Dryck">Dryck</option>
+                                            <option value="Soppa">Soppa</option>
+                                            <option value="Frukt">Frukt</option>
+                                            <option value="Grönsaker">Grönsaker</option>
+                                            <option value="Kött">Kött</option>
+                                            <option value="Fisk">Fisk</option>
+                                            <option value="Mejeri">Mejeri</option>
+                                            <option value="Bröd">Bröd</option>
+                                            <option value="Annat">Annat</option>
+                                        </select>
+
+                                    </td>
+                                    <td><input type="date" name="ExpirationDate" value={editedFoodItem.ExpirationDate || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="date" name="dateAdded" value={editedFoodItem.dateAdded || ''} onChange={handleInputChange} /></td>
+                                    <td>
+                                        <button className="btn btn-success" onClick={() => handleEdit(item.id)}>Save</button>
+                                        <button className="btn btn-secondary" onClick={cancelEditing}>Cancel</button>
+                                    </td>
+                                </>
+                            ) : (
+                                <>
+                                    <td data-label="Name: ">{item.name}</td>
+                                    <td data-label="Price: ">{item.price}</td>
+                                    <td data-label="Weight: ">{item.weight}</td>
+                                    <td data-label="Description: ">{item.description}</td>
+                                    <td data-label="Expiration date: ">{formatDate(item.ExpirationDate)}</td>
+                                    <td data-label="Date added: ">{formatDate(item.dateAdded)}</td>
+                                    {isLoggedIn && (
+                                        <td>
+                                            <button className="btn btn-primary" onClick={() => startEditing(item)}>Edit</button>
+                                            <button className="btn btn-danger" onClick={() => handleDelete(item.id)}>Delete</button>
+                                        </td>
+                                    )}
+                                </>
+                            )}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
         </div>
     );
+
 }
 
 export default FoodList;

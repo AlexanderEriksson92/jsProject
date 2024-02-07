@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import './FoodForm.css'
 
 function FoodForm() {
-
+  const isLoggedIn = localStorage.getItem('apiKey') !== null;
   const [foodItem, setFoodItem] = useState({
     id: '',
     name: '',
     price: '',
     weight: '',
     description: '',
-    category: '',
+    category: 'Dryck',
     ExpirationDate: '',
     dateAdded: ''
   });

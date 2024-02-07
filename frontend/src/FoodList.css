@@ -5,12 +5,16 @@
 }
 
 .food-item {
-    display: grid;
-    grid-template-columns: 1fr 2fr; 
-    gap: 20px; 
     border: 1px solid #ccc;
     margin-bottom: 10px;
     padding: 10px;
+}
+.food-item:hover {
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+.category-post:hover {
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
 .food-image img {
@@ -24,7 +28,13 @@
     flex-direction: column;
     justify-content: space-around; 
 }
-
+.food-item-image {
+    width: 100px;
+    height: 100px;
+    overflow: hidden;
+    border-radius: 50%;
+    margin-right: 10px;
+}
 .food-edit-box {
     display: flex;
     flex-direction: column;
@@ -45,13 +55,53 @@ input[type="date"]:focus {
     outline: none;
     border-color: #007bff;
 }
+.td-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+.post:hover {
+    cursor: pointer;
+  }
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.category-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2em;
+}
+.form-select:hover {
+    cursor: pointer;
+}
+th.sortable:hover {
+    cursor: pointer;
+  }
+
 @media (max-width: 768px) {
-     .food-item {
-        grid-template-columns: 1fr;
-        grid-row: 2;
+     
+    .food-item, .editing {
+        display: flex;
+        flex-direction: column;
     }
-    
     .food-image, .food-info {
         width: 100%;
     }
+    th {
+        font-size: 14px;
+        padding: 0;
+
+    }
+    .table thead {
+        display: none;
+      }
+      .food-item td:before {
+        content: attr(data-label);
+        float: left;
+        font-weight: bold;
+        padding-right: 5px;
+      }
 }

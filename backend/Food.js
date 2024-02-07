@@ -11,9 +11,9 @@ const foodSchema = new mongoose.Schema({
     weight: String,
     description: String,
     category: String,
-    ExpirationDate: Date,
+    ExpirationDate: String,
     imageUrl: String,
-    dateAdded: Date
+    dateAdded: String
 });
 
 const food = mongoose.model('Food', foodSchema);

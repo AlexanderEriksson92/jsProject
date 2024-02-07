@@ -26,8 +26,8 @@ app.post('/food', authenticate, async (req, res) => {
     if (highestId.length > 0) {
       newId = highestId[0].id + 1;
     }
-    let dateAdded = req.body.dateAdded;
-    dateAdded = dateAdded.slice(0, 10);
+    const dateAdded = moment(req.body.dateAdded).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'); 
+
     // Skapar nytt objekt med värden från body
     const newFood = new Food({
       id: newId,
@@ -38,7 +38,7 @@ app.post('/food', authenticate, async (req, res) => {
       category: req.body.category,
       ExpirationDate: req.body.ExpirationDate,
       imageUrl: req.body.imageUrl,
-      dateAdded: dateAdded
+      dateAdded: dateAdded,
     });
     // Spara den nya matvaran
     const savedFood = await newFood.save();
