@@ -132,7 +132,6 @@ function FoodForm() {
       {error && <div className='alert error-alert'>{error}</div>}
       <button type="submit">Lägg till matvara</button>
     </form>
-
   );
 }
 

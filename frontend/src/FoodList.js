@@ -12,6 +12,7 @@ function FoodList() {
     const [activeCategory, setActiveCategory] = useState('Alla');
     const [sortField, setSortField] = useState('name');
     const [sortOrder, setSortOrder] = useState('asc');
+    const [searchItem, setSearchItem] = useState('');
 
     const startEditing = (foodItem) => {                                                    // Om användaren klickar på edit så kommer den här funktionen att köras 
         setEditingId(foodItem.id);                                                          // Sätter editingId till matvarans id 
@@ -112,51 +113,66 @@ function FoodList() {
             })
             .catch((error) => console.log(error));
     }, []);
+    const filteredItems = food.filter(item => {
+        const matchesCategory = activeCategory === 'Alla' || item.category === activeCategory;
+        const matchesSearch = searchItem.trim() === '' || item.name.toLowerCase().includes(searchItem.toLowerCase()) ||
+            item.description.toLowerCase().includes(searchItem.toLowerCase()) ||
+            item.category.toLowerCase().includes(searchItem.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
     return (
         <div className="container">
             {deleteMessage && <div className="alert alert-success">{deleteMessage}</div>}
-
             <select className="form-select m-3" value={activeCategory} onChange={(e) => setActiveCategory(e.target.value)}>
                 {['Alla', ...new Set(food.map(item => item.category))].map(category => (
                     <option key={category} value={category}>{category}</option>
                 ))}
             </select>
-
-            <table className="table">
-                <thead>
-                    <tr>
-                        <th onClick={handleSort('category')} className="sortable">
-                            Category
-                            <FontAwesomeIcon icon={faChevronDown} />
-                        </th>
-                        <th>Image</th>
-                        <th onClick={handleSort('name')} className="sortable">
-                            Name
-                            <FontAwesomeIcon icon={faChevronDown} />
-                        </th>
-                        <th onClick={handleSort('price')} className="sortable">
-                            Price
-                            <FontAwesomeIcon icon={faChevronDown} />
-                        </th>
-                        <th>Weight</th>
-                        <th onClick={handleSort('description')} className="sortable"
-                        >Description
-                            <FontAwesomeIcon icon={faChevronDown} /></th>
-                        <th onClick={handleSort('expirationDate')} className="sortable">
-                            Expiration Date
-                            <FontAwesomeIcon icon={faChevronDown} /></th>
-                        <th onClick={handleSort('dateAdded')} className="sortable">
-                            Date Added
-                            <FontAwesomeIcon icon={faChevronDown} /></th>
-                        {isLoggedIn && <th>Actions</th>}
-                    </tr>
-                </thead>
-                <tbody>
-                    {food.filter(item => activeCategory === 'Alla' || item.category === activeCategory).map((item) => (
+            <input
+                type="text"
+                className="form-control m-3"
+                placeholder="Search"
+                value={searchItem}
+                onChange={(e) => setSearchItem(e.target.value)}
+            />
+            {filteredItems.length > 0 ? (
+                <table className="table" id="table-1">
+                    <thead>
+                        <tr>
+                            <th onClick={handleSort('category')} className="sortable">
+                                Category
+                                <FontAwesomeIcon icon={faChevronDown} />
+                            </th>
+                            <th>Image</th>
+                            <th onClick={handleSort('name')} className="sortable">
+                                Name
+                                <FontAwesomeIcon icon={faChevronDown} />
+                            </th>
+                            <th onClick={handleSort('price')} className="sortable">
+                                Price
+                                <FontAwesomeIcon icon={faChevronDown} />
+                            </th>
+                            <th>Weight</th>
+                            <th onClick={handleSort('description')} className="sortable"
+                            >Description
+                                <FontAwesomeIcon icon={faChevronDown} /></th>
+                            <th onClick={handleSort('expirationDate')} className="sortable">
+                                Expiration Date
+                                <FontAwesomeIcon icon={faChevronDown} /></th>
+                            <th onClick={handleSort('dateAdded')} className="sortable">
+                                Date Added
+                                <FontAwesomeIcon icon={faChevronDown} /></th>
+                            {isLoggedIn && <th>Actions</th>}
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {/* Här visas filtrerade matvaror */}
+                    {filteredItems.map((item) => (
                         <tr key={item.id} className={editingId === item.id ? 'editing' : 'food-item'}>
                             <td>{item.category}</td>
                             <td><img src={getImageUrl(item.imageUrl)} className='food-item-image' alt="food" /></td>
                             {editingId === item.id ? (
+                                // Redigeringsvy
                                 <>
                                     <td><input type="text" name="name" value={editedFoodItem.name || ''} onChange={handleInputChange} /></td>
                                     <td><input type="text" name="price" value={editedFoodItem.price || ''} onChange={handleInputChange} /></td>
@@ -164,17 +180,16 @@ function FoodList() {
                                     <td><input type="text" name="description" value={editedFoodItem.description || ''} onChange={handleInputChange} /></td>
                                     <td>
                                         <select name="category" value={editedFoodItem.category || ''} onChange={handleInputChange}>
-                                            <option value="Dryck">Dryck</option>
-                                            <option value="Soppa">Soppa</option>
-                                            <option value="Frukt">Frukt</option>
-                                            <option value="Grönsaker">Grönsaker</option>
-                                            <option value="Kött">Kött</option>
-                                            <option value="Fisk">Fisk</option>
-                                            <option value="Mejeri">Mejeri</option>
-                                            <option value="Bröd">Bröd</option>
-                                            <option value="Annat">Annat</option>
+                                        <option value="Dryck">Dryck</option>
+                                                <option value="Soppa">Soppa</option>
+                                                <option value="Frukt">Frukt</option>
+                                                <option value="Grönsaker">Grönsaker</option>
+                                                <option value="Kött">Kött</option>
+                                                <option value="Fisk">Fisk</option>
+                                                <option value="Mejeri">Mejeri</option>
+                                                <option value="Bröd">Bröd</option>
+                                                <option value="Annat">Annat</option>
                                         </select>
-
                                     </td>
                                     <td><input type="date" name="ExpirationDate" value={editedFoodItem.ExpirationDate || ''} onChange={handleInputChange} /></td>
                                     <td><input type="date" name="dateAdded" value={editedFoodItem.dateAdded || ''} onChange={handleInputChange} /></td>
@@ -185,12 +200,12 @@ function FoodList() {
                                 </>
                             ) : (
                                 <>
-                                    <td data-label="Name: ">{item.name}</td>
-                                    <td data-label="Price: ">{item.price}</td>
-                                    <td data-label="Weight: ">{item.weight}</td>
-                                    <td data-label="Description: ">{item.description}</td>
-                                    <td data-label="Expiration date: ">{formatDate(item.ExpirationDate)}</td>
-                                    <td data-label="Date added: ">{formatDate(item.dateAdded)}</td>
+                                    <td>{item.name}</td>
+                                    <td>{item.price}</td>
+                                    <td>{item.weight}</td>
+                                    <td>{item.description}</td>
+                                    <td>{formatDate(item.ExpirationDate)}</td>
+                                    <td>{formatDate(item.dateAdded)}</td>
                                     {isLoggedIn && (
                                         <td>
                                             <button className="btn btn-primary" onClick={() => startEditing(item)}>Edit</button>
@@ -202,10 +217,12 @@ function FoodList() {
                         </tr>
                     ))}
                 </tbody>
-            </table>
+                </table>
+            ) : (
+                <div>Inga matvaror matchar din sökning.</div>
+            )}
         </div>
     );
-
 }
 
 export default FoodList;
