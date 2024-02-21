@@ -46,7 +46,9 @@ function Menu() {
                     )}
                 </ul>
             </div>
+            <span className="navbar-brand mb-0 h1">Virtual Fridge</span>
         </nav>
+       
     );
 }
 

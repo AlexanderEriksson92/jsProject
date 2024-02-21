@@ -6,6 +6,7 @@ app.use(express.json());
 const cors = require('cors');
 const User = require('./User');
 const crypto = require('crypto');
+const moment = require('moment');
 
 app.use(cors());
 // Anslut till databasen och startar servern
@@ -26,7 +27,7 @@ app.post('/food', authenticate, async (req, res) => {
     if (highestId.length > 0) {
       newId = highestId[0].id + 1;
     }
-    const dateAdded = moment(req.body.dateAdded).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]'); 
+    const dateAdded = moment(req.body.dateAdded).format('YYYY-MM-DD');
 
     // Skapar nytt objekt med värden från body
     const newFood = new Food({
@@ -57,7 +58,6 @@ app.get('/food', (req, res) => {
 
 // Hämtar ett objekt med ID
 app.get('/food/:id', async (req, res) => {
-
   try {
     const foodId = parseInt(req.params.id);
     if (isNaN(foodId)) {
@@ -103,6 +103,7 @@ app.put('/food/:id', authenticate, async (req, res) => {                        
     res.status(500).json({ message: err.message });
   }
 });
+// Loggar ut och raderar API-nyckel
 app.post ('/logout', async (req, res) => {
   const apiKey = req.headers['x-api-key'];
   if (!apiKey) {
@@ -188,12 +189,6 @@ function authenticate(req, res, next) {
     User.apiKeyExpiresAt = null;
     User.save();
     return res.status(401).json({ message: 'API-nyckeln har gått ut.' });
-  }
-
-  console.log('Received API Key:', apiKey); // Loggar mottagen API-nyckel
-  if (!apiKey || apiKey === 'null') {
-      console.log('No API Key provided'); // Loggar om ingen nyckel finns
-      return res.status(401).json({ message: 'Missing X-API-Key header' });
   }
 
   User.findOne({ apiKey }).then(user => {

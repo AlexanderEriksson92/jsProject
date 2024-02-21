@@ -1,15 +1,13 @@
 import React, { useState } from "react";
 import { Form, Link } from "react-router-dom";
-
+import './LoginForm.css';
 function LoginForm() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-
-
+    // Skickar användarnamn och lösenord till servern. Om det är korrekt så får användaren en api-nyckel som sparas i localstorage.
     const handleSubmit = async (e) => {
         e.preventDefault();
         const user = { username, password };
-
         try {
             const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
@@ -34,8 +32,7 @@ function LoginForm() {
     };
 
     return (
-
-        <div>
+        <div className="container">
             <form onSubmit={handleSubmit}>
                 <div>
                     <h1>Logga in</h1>
@@ -54,7 +51,7 @@ function LoginForm() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                 </div>
-                <button type="submit">Logga in</button>
+                <button type="submit" className="btn btn-primary">Logga in</button>
             </form >
             <Link to="/register">Registrera dig</Link>
         </div >

@@ -105,6 +105,7 @@ function FoodForm() {
 
   return (
     <form onSubmit={handleSubmit} className='food-form'>
+       {message && <div className='alert alert-success'>{message}</div>}
       <label htmlFor="name">Name: </label>
       <input type="text" name="name" value={foodItem.name} onChange={handleChange} />
       <label htmlFor="price">Price: </label>
@@ -115,6 +116,7 @@ function FoodForm() {
       <input type="text" name="description" value={foodItem.description} onChange={handleChange} />
       <label htmlFor="category">Category: </label>
       <select name="category" value={foodItem.category} onChange={handleChange}>
+        <option>Välj</option>
         <option value="Dryck">Dryck</option>
         <option value="Soppa">Soppa</option>
         <option value="Frukt">Frukt</option>
@@ -128,7 +130,6 @@ function FoodForm() {
       <label htmlFor="ExpirationDate">Expiration Date</label>
       <input type="date" name="ExpirationDate" value={foodItem.ExpirationDate} onChange={handleChange} />
       <input type="file" name="image" onChange={handleImageChange} />
-      {message && <div className='alert message-alert'>{message}</div>}
       {error && <div className='alert error-alert'>{error}</div>}
       <button type="submit">Lägg till matvara</button>
     </form>

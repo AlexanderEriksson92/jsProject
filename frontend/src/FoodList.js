@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './FoodList.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+import { formatDate, getImageUrl } from './utils';
 
 function FoodList() {
     const isLoggedIn = localStorage.getItem('apiKey') !== null;
@@ -24,13 +25,7 @@ function FoodList() {
     const cancelEditing = () => {
         setEditingId(null);
     };
-    const formatDate = (dateString) => {
-        return dateString.slice(0, 15);
-    };
-    const getImageUrl = (imageUrl) => {
-        return imageUrl || 'https://i.ibb.co/xSwX9Bf/3f338739-34e1-4e43-90a7-6f9ffcfd139b.webp';    // Om det inte finns någon bild så visas en default bild
-    };
-
+    // Sorterar matvaror efter kategori, namn, pris, vikt, beskrivning, utgångsdatum och datum tillagt
     const sortFood = (field) => {
         const order = sortField === field && sortOrder === 'asc' ? 'desc' : 'asc';
         setSortField(field);
@@ -42,7 +37,7 @@ function FoodList() {
             return 0;
         }));
     };
-
+    // När användaren klickar på save skickas en PUT request till servern
     const handleSort = (field) => () => sortFood(field);
     const handleEdit = async (id) => {
         const apiKey = localStorage.getItem('apiKey');
@@ -70,9 +65,10 @@ function FoodList() {
             console.log(error);
         }
         setEditingId(null);
-    }
+    }  
+    // Raderar matvara 
     const handleDelete = async (id) => {
-        const apiKey = localStorage.getItem('apiKey');
+        const apiKey = localStorage.getItem('apiKey');                                    // Hämtar API-nyckeln från local storage
         console.log('API Key in handleDelete:', apiKey);
         const confirmed = window.confirm('Är du säker på att du vill ta bort matvaran?'); // Ger användaren möjligen att bekräfta att den vill radera matvaran
 
@@ -91,7 +87,6 @@ function FoodList() {
                 const foodItemToDelete = food.find((foodItem) => foodItem.id === id);
                 const foodItemName = foodItemToDelete ? foodItemToDelete.name : 'Okänd matvara';
 
-
                 setFood(food.filter((foodItem) => foodItem.id !== id));
                 setDeleteMessage(`${foodItemName} har raderats.`);
                 // Sätter en timeout på 3 sekunder
@@ -103,7 +98,7 @@ function FoodList() {
             }
         }
     };
-
+    // Hämtar matvaror från servern
     useEffect(() => {
         fetch('http://localhost:5000/food')
             .then((response) => response.json())
@@ -113,6 +108,7 @@ function FoodList() {
             })
             .catch((error) => console.log(error));
     }, []);
+    // Filtrerar matvaror efter kategori och sökning
     const filteredItems = food.filter(item => {
         const matchesCategory = activeCategory === 'Alla' || item.category === activeCategory;
         const matchesSearch = searchItem.trim() === '' || item.name.toLowerCase().includes(searchItem.toLowerCase()) ||
@@ -136,7 +132,7 @@ function FoodList() {
                 onChange={(e) => setSearchItem(e.target.value)}
             />
             {filteredItems.length > 0 ? (
-                <table className="table" id="table-1">
+                <table className="table">
                     <thead>
                         <tr>
                             <th onClick={handleSort('category')} className="sortable">
@@ -166,19 +162,12 @@ function FoodList() {
                         </tr>
                     </thead>
                     <tbody>
-                    {/* Här visas filtrerade matvaror */}
                     {filteredItems.map((item) => (
                         <tr key={item.id} className={editingId === item.id ? 'editing' : 'food-item'}>
-                            <td>{item.category}</td>
-                            <td><img src={getImageUrl(item.imageUrl)} className='food-item-image' alt="food" /></td>
                             {editingId === item.id ? (
                                 // Redigeringsvy
-                                <>
-                                    <td><input type="text" name="name" value={editedFoodItem.name || ''} onChange={handleInputChange} /></td>
-                                    <td><input type="text" name="price" value={editedFoodItem.price || ''} onChange={handleInputChange} /></td>
-                                    <td><input type="text" name="weight" value={editedFoodItem.weight || ''} onChange={handleInputChange} /></td>
-                                    <td><input type="text" name="description" value={editedFoodItem.description || ''} onChange={handleInputChange} /></td>
-                                    <td>
+                                <> 
+                                 <td>
                                         <select name="category" value={editedFoodItem.category || ''} onChange={handleInputChange}>
                                         <option value="Dryck">Dryck</option>
                                                 <option value="Soppa">Soppa</option>
@@ -191,21 +180,29 @@ function FoodList() {
                                                 <option value="Annat">Annat</option>
                                         </select>
                                     </td>
+                                 <td><img src={getImageUrl(item.imageUrl)} className='food-item-image' alt="food" /></td>
+                                    <td><input type="text" name="name" value={editedFoodItem.name || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="text" name="price" value={editedFoodItem.price || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="text" name="weight" value={editedFoodItem.weight || ''} onChange={handleInputChange} /></td>
+                                    <td><input type="text" name="description" value={editedFoodItem.description || ''} onChange={handleInputChange} /></td>
                                     <td><input type="date" name="ExpirationDate" value={editedFoodItem.ExpirationDate || ''} onChange={handleInputChange} /></td>
                                     <td><input type="date" name="dateAdded" value={editedFoodItem.dateAdded || ''} onChange={handleInputChange} /></td>
                                     <td>
                                         <button className="btn btn-success" onClick={() => handleEdit(item.id)}>Save</button>
                                         <button className="btn btn-secondary" onClick={cancelEditing}>Cancel</button>
                                     </td>
+                                  
                                 </>
                             ) : (
                                 <>
-                                    <td>{item.name}</td>
-                                    <td>{item.price}</td>
-                                    <td>{item.weight}</td>
-                                    <td>{item.description}</td>
-                                    <td>{formatDate(item.ExpirationDate)}</td>
-                                    <td>{formatDate(item.dateAdded)}</td>
+                                <td data-label="Category:">{item.category}</td>
+                            <td><img src={getImageUrl(item.imageUrl)} className='food-item-image' alt="food" /></td>
+                                    <td data-label="Name:">{item.name}</td>
+                                    <td data-label="Price:">{item.price}</td>
+                                    <td data-label="Weight:">{item.weight}</td>
+                                    <td data-label="Description:">{item.description}</td>
+                                    <td data-label="Expires:">{formatDate(item.ExpirationDate)}</td>
+                                    <td data-label="Added:">{formatDate(item.dateAdded)}</td>
                                     {isLoggedIn && (
                                         <td>
                                             <button className="btn btn-primary" onClick={() => startEditing(item)}>Edit</button>

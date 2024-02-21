@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
+// Registrerar användare
 function RegisterForm() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [email, setEmail] = useState('');
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (password !== confirmPassword) {
@@ -42,7 +42,7 @@ function RegisterForm() {
     }
 
 return (
-    <div>
+    <div className='container'>
         <form onSubmit={handleSubmit}>
             <div>
                 <h1>Registrera dig</h1>
@@ -77,9 +77,9 @@ return (
                     onChange={(e) => setEmail(e.target.value)}
                 />
             </div>
-            <button type="submit">Registrera dig</button>
+            <button type="submit" className="btn btn-primary">Registrera dig</button>
         </form>
-        <Link to="/login">Redan registrerad? Logga in här</Link>
+        <Link to="/login" className='login-link'>Redan registrerad? Logga in här</Link>
     </div>
   );
 }

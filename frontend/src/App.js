@@ -7,13 +7,14 @@ import {
     Route,
     Routes
 } from "react-router-dom";
+// importerar komponenter
 import FoodForm from './PutFoodForm';
 import FoodList from './FoodList';
 import Home from './Home';
 import Login from './Login';
 import Register from './Register';
 import Menu from './Menu';
-
+// definerar alla routes
 function App() {
     const apiKey = localStorage.getItem('apiKey');
     return (
